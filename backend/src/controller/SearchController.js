@@ -17,12 +17,17 @@ async index(req,res){
                     type:'Point',
                     coordinates:[longitude,latitude]
                 },
-                $maxDistance:1000
+                $maxDistance:90000,
             }
         }
+        
+    }).then((response)=>{
+        return res.json(response)
+    }).catch((err)=>{
+        return res.json({erro:err})
     })
-    console.log(techsArray)
-    res.json(devs)
+    //console.log(techsArray)
+    
 }
 
 }
