@@ -1,12 +1,18 @@
 import React, { useEffect, useState } from 'react'
-import { StyleSheet, Image, View, Text, TextInput, TouchableOpacity, Keyboard } from 'react-native'
+import { StyleSheet, Image, View, Text, TextInput, TouchableOpacity, Keyboard, ProgressBarAndroid } from 'react-native'
 import MapView, { Marker, Callout } from 'react-native-maps';
 import { requestPermissionsAsync, getCurrentPositionAsync } from 'expo-location'
 import { MaterialIcons } from '@expo/vector-icons'
+import api from '../services/api'
+
 
 
 function Main({ navigation }) {
+    const [devs, setDevs] = useState([])
+    const [visible, setVisible] = useState(null)
     const [currentRegion, setCurrentyRegion] = useState(null)
+    const [techs, setTechs] = useState('')
+
     useEffect(() => {
         async function loadInitPosition() {
             const { granted } = await requestPermissionsAsync()
@@ -18,47 +24,92 @@ function Main({ navigation }) {
                 setCurrentyRegion({
                     latitude,
                     longitude,
-                    latitudeDelta: 0.04,
-                    longitudeDelta: 0.04,
+                    latitudeDelta: 0.02,
+                    longitudeDelta: 0.02,
                 })
             }
         }
+
         loadInitPosition()
     }, [])
 
+    async function loadDevs() {
+        setVisible(true)
+        const { latitude, longitude } = currentRegion
+
+        await api.get('/search', {
+            params: {
+                latitude,
+                longitude,
+                techs: techs
+            }
+        }).then((response) => {
+            console.log(response.data)
+            setDevs(response.data)
+            setVisible(false)
+        }).catch((err) => {
+            console.log("aaaaaaaa " + err.message)
+        })
+
+    }
+
+
+    function handleRegionChanged(region) {
+        setCurrentyRegion(region)
+    }
     if (!currentRegion) {
         return null
     }
-    return (
-        <>
-            <MapView initialRegion={currentRegion} style={style.map} >
-                <Marker coordinate={{ latitude: -23.5114123, longitude: -46.4408931 }} >
-                    <Image style={style.avatar} source={{ uri: 'https://avatars2.githubusercontent.com/u/49004830?s=460&v=4' }} />
-                    <Callout onPress={() => {
-                        //navegação
-                        navigation.navigate('Profile', { github_username: 'lordradamanthys' })
+    if (visible) {
+        return (
+            <View style={style.container}>
+                <ProgressBarAndroid style={style.progress}/>
+            </View>)
+    } else {
+        return (
 
-                    }}>
-                        <View style={style.callout}>
-                            <Text style={style.devName}>Mateus</Text>
-                            <Text style={style.devBio}>Bio dsfhsjhkjdshkjfdhjfkshjkd</Text>
-                            <Text style={style.devThechs}>ReactJs</Text>
-                        </View>
-                    </Callout>
-                </Marker>
-            </MapView>
-            <View style={style.searchForm}>
-                <TextInput style={style.searchInput}
-                    placeholder="Buscar Devs"
-                    placeholderTextColor="#999"
-                    autoCapitalize="words" />
+            <>
 
-                <TouchableOpacity onPress={() => { }} style={style.loadButton}>
-                    <MaterialIcons name="my-location" size={20} color="#fff" />
-                </TouchableOpacity>
-            </View>
-        </>
-    )
+                <MapView onRegionChangeComplete={handleRegionChanged} initialRegion={currentRegion} style={style.map} >
+
+                    {devs.map(dev => (
+                        <Marker key={dev._id} coordinate={
+                            {
+                                latitude: dev.location.coordinates[1],
+                                longitude: dev.location.coordinates[0]
+                            }
+                        } >
+                            <Image style={style.avatar} source={{ uri: dev.avatar_url }} />
+                            <Callout onPress={() => {
+                                //navegação
+                                navigation.navigate('Profile', { github_username: dev.github_username })
+
+                            }}>
+                                <View style={style.callout}>
+                                    <Text style={style.devName}>{dev.name}</Text>
+                                    <Text style={style.devBio}>{dev.bio}</Text>
+                                    <Text style={style.devThechs}>{dev.techs.join(', ')}</Text>
+                                </View>
+                            </Callout>
+                        </Marker>
+                    ))}
+                </MapView>
+                <View style={style.searchForm}>
+                    <TextInput style={style.searchInput}
+                        placeholder="Buscar Devs"
+                        placeholderTextColor="#999"
+                        autoCapitalize="words"
+                        value={techs}
+                        onChangeText={setTechs} />
+
+
+                    <TouchableOpacity onPress={loadDevs} style={style.loadButton}>
+                        <MaterialIcons name="my-location" size={20} color="#fff" />
+                    </TouchableOpacity>
+                </View>
+            </>
+        )
+    }
 }
 
 
@@ -66,6 +117,15 @@ const style = StyleSheet.create({
     map: {
         flex: 1,
     },
+    container: {
+        flex: 1,
+        justifyContent: 'center',
+        padding: 10,
+    },
+    progress: {
+        color:"#8a2be2"
+    },
+
     avatar: {
         width: 54,
         height: 54,
@@ -112,13 +172,13 @@ const style = StyleSheet.create({
         elevation: 3
     },
     loadButton: {
-        width:50,
-        height:50,
-        backgroundColor:"#8e4dff",
-        borderRadius:25,
-        justifyContent:'center',
-        alignItems:'center',
-        marginLeft:15
+        width: 50,
+        height: 50,
+        backgroundColor: "#8e4dff",
+        borderRadius: 25,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginLeft: 15
     }
 })
 export default Main

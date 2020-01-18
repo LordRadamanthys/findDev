@@ -36,19 +36,23 @@ module.exports = {
     },
 
     async update(req, res) {
-        const { github_username, techs, latitude, longitude } = req.body
+        const { github_username, techs, latitude, longitude ,id} = req.body
         const techsArray = parseStringAsArray(techs)
         const location = {
             type: 'Point',
             coordinates: [longitude, latitude]
         }
         await Dev.updateOne({
-            "github_username": github_username
+            "_id": id
         }, // Filter
             {
-                $set: { "techs": techsArray,"location":location }
+                $set: {
+                    "techs":techsArray,
+                    location
+                }
             }).then(() => {
-                return res.status(200).json({message:"ok"})
+                console.log(latitude)
+                return res.status(200).json({ message: "ok" })
             }).catch((error) => {
                 return res.status(400).send({ erro: error.message })
             })
@@ -56,10 +60,10 @@ module.exports = {
     },
 
     async delete(req, res) {
-        const { github_username } = req.body
-        await Dev.deleteOne({github_username:github_username}).then(()=>{
+        const { github_username, name, id } = req.body
+        await Dev.deleteOne({ _id: id }).then(() => {
             return res.send("ok")
-        }).catch((err)=>{
+        }).catch((err) => {
             return res.send(err.message)
         })
     }
