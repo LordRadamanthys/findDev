@@ -1,6 +1,7 @@
 const axios = require('axios')
 const Dev = require('../models/Dev')
 const parseStringAsArray = require('../utils/parseStringArray')
+const { findConnections, sendMessage , sendMessageRemove} = require('../websocket')
 module.exports = {
     async index(req, res) {
         const devs = await Dev.find()
@@ -32,11 +33,18 @@ module.exports = {
             techs: techsArray,
             location
         })
+
+        //filtrar as conexoes que estão a no maximo 10km de mim
+        const sendToSocketMessageTo = await findConnections(
+            { latitude, longitude },
+            techsArray
+        )
+        sendMessage(sendToSocketMessageTo, 'new-dev', dev)
         return res.json(dev)
     },
 
     async update(req, res) {
-        const { github_username, techs, latitude, longitude ,id} = req.body
+        const { github_username, techs, latitude, longitude, id } = req.body
         const techsArray = parseStringAsArray(techs)
         const location = {
             type: 'Point',
@@ -47,11 +55,10 @@ module.exports = {
         }, // Filter
             {
                 $set: {
-                    "techs":techsArray,
+                    "techs": techsArray,
                     location
                 }
             }).then(() => {
-                console.log(latitude)
                 return res.status(200).json({ message: "ok" })
             }).catch((error) => {
                 return res.status(400).send({ erro: error.message })
@@ -61,10 +68,12 @@ module.exports = {
 
     async delete(req, res) {
         const { github_username, name, id } = req.body
-        await Dev.deleteOne({ _id: id }).then(() => {
-            return res.send("ok")
-        }).catch((err) => {
-            return res.send(err.message)
-        })
+        const response = await Dev.deleteOne({ _id: id })
+
+        
+        
+        //sendMessageRemove('remove-dev')
+        return res.send("ok")
+
     }
 }
