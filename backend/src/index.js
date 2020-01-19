@@ -1,9 +1,15 @@
 const express = require('express')
 const mongoose = require('mongoose')
 const cors = require('cors')
+const http = require('http')
 const routes = require('./routes')
+const {setupWebSocket} = require('./websocket')
 
 const app = express()
+const server = http.Server(app)
+
+setupWebSocket(server)
+
 app.use(cors())
 mongoose.connect('mongodb+srv://mateus:cdzasmita@cluster0-ebwa5.mongodb.net/week10?retryWrites=true&w=majority',{
     useNewUrlParser: true,
@@ -12,4 +18,4 @@ mongoose.connect('mongodb+srv://mateus:cdzasmita@cluster0-ebwa5.mongodb.net/week
 app.use(express.json())
 app.use(routes)
 
-app.listen(3333)
+server.listen(3333)

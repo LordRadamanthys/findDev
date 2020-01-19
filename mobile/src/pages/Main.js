@@ -4,6 +4,7 @@ import MapView, { Marker, Callout } from 'react-native-maps';
 import { requestPermissionsAsync, getCurrentPositionAsync } from 'expo-location'
 import { MaterialIcons } from '@expo/vector-icons'
 import api from '../services/api'
+import { connect, disconnect, subscribeToNewDevs, removeDevs } from '../services/socket'
 
 
 
@@ -33,23 +34,40 @@ function Main({ navigation }) {
         loadInitPosition()
     }, [])
 
+    useEffect(() => {
+        subscribeToNewDevs(dev => setDevs([...devs, dev]))
+    }, [devs])
+
+    /*useEffect(()=>{
+        removeDevs(loadDevs())
+    },[devs])*/
+
+    function setupWebsocket() {
+        disconnect()
+        const { latitude, longitude } = currentRegion
+
+        connect(
+            latitude,
+            longitude,
+            techs
+        )
+    }
+
     async function loadDevs() {
         setVisible(true)
         const { latitude, longitude } = currentRegion
 
-        await api.get('/search', {
+        const response = await api.get('/search', {
             params: {
                 latitude,
                 longitude,
                 techs: techs
             }
-        }).then((response) => {
-            console.log(response.data)
-            setDevs(response.data)
-            setVisible(false)
-        }).catch((err) => {
-            console.log("aaaaaaaa " + err.message)
         })
+        setVisible(false)
+        setDevs(response.data)
+
+        setupWebsocket()
 
     }
 
@@ -63,7 +81,7 @@ function Main({ navigation }) {
     if (visible) {
         return (
             <View style={style.container}>
-                <ProgressBarAndroid style={style.progress}/>
+                <ProgressBarAndroid style={style.progress} />
             </View>)
     } else {
         return (
@@ -123,7 +141,7 @@ const style = StyleSheet.create({
         padding: 10,
     },
     progress: {
-        color:"#8a2be2"
+        color: "#8a2be2"
     },
 
     avatar: {
