@@ -5,6 +5,7 @@ import { requestPermissionsAsync, getCurrentPositionAsync } from 'expo-location'
 import { MaterialIcons } from '@expo/vector-icons'
 import api from '../services/api'
 import { connect, disconnect, subscribeToNewDevs, removeDevs } from '../services/socket'
+import CreateAccount from './CreateAccount';
 
 
 
@@ -54,6 +55,7 @@ function Main({ navigation }) {
     }
 
     async function loadDevs() {
+        if(techs.length <1) return alert("preencha o campo")
         setVisible(true)
         const { latitude, longitude } = currentRegion
 
@@ -113,16 +115,21 @@ function Main({ navigation }) {
                     ))}
                 </MapView>
                 <View style={style.searchForm}>
-                    <TextInput style={style.searchInput}
+                    <TextInput  style={style.searchInput}
                         placeholder="Buscar Devs"
                         placeholderTextColor="#999"
                         autoCapitalize="words"
                         value={techs}
-                        onChangeText={setTechs} />
+                        onChangeText={setTechs}
+                     />
 
 
                     <TouchableOpacity onPress={loadDevs} style={style.loadButton}>
                         <MaterialIcons name="my-location" size={20} color="#fff" />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity onPress={()=>navigation.navigate('CreateAccount')} style={style.loadButton}>
+                        <MaterialIcons name="add" size={20} color="#fff" />
                     </TouchableOpacity>
                 </View>
             </>

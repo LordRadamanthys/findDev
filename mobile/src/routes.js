@@ -3,6 +3,7 @@ import { createStackNavigator } from 'react-navigation-stack'
 
 import Main from './pages/Main.js'
 import Profile from './pages/Profile.js'
+import CreateAccount from './pages/CreateAccount.js'
 
 const Routes = createAppContainer(
     createStackNavigator({
@@ -16,6 +17,12 @@ const Routes = createAppContainer(
             screen: Profile,
             navigationOptions:{
                 title:'Perfil no Github'
+            }
+        },
+        CreateAccount:{
+            screen: CreateAccount,
+            navigationOptions:{
+                title:'Cadastro'
             }
         }
     },{
