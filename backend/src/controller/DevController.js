@@ -13,12 +13,15 @@ module.exports = {
     async store(req, res) {
 
         const { github_username, techs, latitude, longitude } = req.body
+        const gitUser = github_username.toLowerCase() 
+        const newTechs = techs.toLowerCase() 
+         
         const user = await Dev.findOne({ github_username })
         if (user) return res.json({ error: "Usuario ja existe" })
         const apiResponse = await axios.get('https://api.github.com/users/' + github_username)
         const { name = login, avatar_url, bio } = apiResponse.data
 
-        const techsArray = parseStringAsArray(techs)
+        const techsArray = parseStringAsArray(newTechs)
 
         const location = {
             type: 'Point',
@@ -26,7 +29,7 @@ module.exports = {
         }
 
         const dev = await Dev.create({
-            github_username,
+            github_username:gitUser,
             name,
             avatar_url,
             bio,

@@ -5,7 +5,8 @@ module.exports = {
 //buscar todos os devs 10km e por tecs
 async index(req,res){
     const {latitude, longitude, techs} = req.query
-    const techsArray = parseStringAsArray(techs)
+    const newTechs = techs.toLowerCase() 
+    const techsArray = parseStringAsArray(newTechs)
     
     const devs = await Dev.find({
         techs:{

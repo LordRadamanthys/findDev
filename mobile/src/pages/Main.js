@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react'
-import { StyleSheet, Image, View, Text, TextInput, TouchableOpacity, Keyboard, ProgressBarAndroid } from 'react-native'
+import { StyleSheet, Image, View, Text, TextInput, TouchableOpacity, Alert, ProgressBarAndroid } from 'react-native'
 import MapView, { Marker, Callout } from 'react-native-maps';
 import { requestPermissionsAsync, getCurrentPositionAsync } from 'expo-location'
 import { MaterialIcons } from '@expo/vector-icons'
 import api from '../services/api'
 import { connect, disconnect, subscribeToNewDevs, removeDevs } from '../services/socket'
-import CreateAccount from './CreateAccount';
+import Account from './Account';
 
 
 
@@ -55,7 +55,7 @@ function Main({ navigation }) {
     }
 
     async function loadDevs() {
-        if(techs.length <1) return alert("preencha o campo")
+        if (techs.length < 1) return Alert.alert('Atenção!', 'Preencha o campo de pesquisa!')
         setVisible(true)
         const { latitude, longitude } = currentRegion
 
@@ -115,20 +115,20 @@ function Main({ navigation }) {
                     ))}
                 </MapView>
                 <View style={style.searchForm}>
-                    <TextInput  style={style.searchInput}
-                        placeholder="Buscar Devs"
+                    <TextInput style={style.searchInput}
+                        placeholder="Buscar Devs..."
                         placeholderTextColor="#999"
                         autoCapitalize="words"
                         value={techs}
                         onChangeText={setTechs}
-                     />
+                    />
 
 
                     <TouchableOpacity onPress={loadDevs} style={style.loadButton}>
                         <MaterialIcons name="my-location" size={20} color="#fff" />
                     </TouchableOpacity>
 
-                    <TouchableOpacity onPress={()=>navigation.navigate('CreateAccount')} style={style.loadButton}>
+                    <TouchableOpacity onPress={() => navigation.navigate('Account', { locate: currentRegion })} style={style.loadButton}>
                         <MaterialIcons name="add" size={20} color="#fff" />
                     </TouchableOpacity>
                 </View>
